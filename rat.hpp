@@ -16,58 +16,78 @@ struct gp {
 void print(gp const& p);
 
 gp operator*(double c, const gp &stru);
+gp operator/(const gp &stru, double c);
 gp operator+(const gp &lhs, const gp &rhs);
 gp& operator+=(gp &lhs, const gp &rhs);
 
+
+//classes definition 
 class particle {
-    static constexpr double charge_unit = 1.6E-19; // absolute value of an electron's charge
-    double _mass;
-    double _charge;
-    double _init_y;
+    protected:
+    static constexpr double charge_unit = 1.6E-19;
+    const double _charge;
     gp _position;
+
+public:
+    particle(double charge, gp position);
+    gp get_position() const;
+    double get_charge() const;
+};
+
+class goldenNucleus : public particle {
+    static constexpr double charge_unit = 1.6E-19;
+    
+    public:
+    goldenNucleus() : particle( 79., {0., 0.}) {} //we can put an integer as charge 
+    
+
+ };
+
+
+
+class alpha : public particle {
+    const double _mass;
+    double _init_y;
     gp _velocity;
     gp _acceleration;
 
 public:
-    particle(double mass, double charge, double init_y, gp position, gp velocity);
-    particle() : _mass(3.26628E-25), _charge(79 * charge_unit), _init_y(0), _position{0., 0.}, _velocity{0., 0.}, _acceleration{0., 0.} {}
-
+    alpha(double mass, double charge, double init_y, gp position, gp velocity);
+    
     // Methods to get vectors position, velocity, and acceleration
-    gp getposition() const;
-    gp getvelocity() const;
-    gp getacceleration() const;
-    double getcharge() const;
     double getmass() const;
     double getinity() const;
+    gp get_velocity() const;
+    gp get_acceleration() const;
+    
 
     // Methods to set vectors position, velocity, and acceleration
-    void set_xposition(double a);
-    void set_yposition(double b);
-    void set_xvelocity(double a);
-    void set_yvelocity(double b);
+    void set_position(const gp a);
+    void set_velocity(const gp a);
+    void set_acceleration(const gp acceleration);
 
-    // Method that returns the distance from the origin
+    // // Method that returns the distance from the origin, therefore the distance from golden nucleus
     double O_distance() const;
 
-    // Method that returns the distance between two particles
-    double P_distance(const particle &pArticle) const;
+    // // Method that returns the distance between two particles
+    // double P_distance(const particle &pArticle) const;
 
-    // Method that returns the vector difference between two particles
-    gp vector_distance(const particle &pArticle) const;
+    // // Method that returns the vector difference between two particles
+    // gp vector_distance(const particle &pArticle) const;
 
-    // Returns the unit vector of distance
-    gp versor_distance(const particle &pArticle) const;
+    // // Returns the unit vector of distance
+    // gp versor_distance(const particle &pArticle) const;
 
-    // Method that returns the acceleration unit vector
-    gp acceleration_versor(const particle &pArticle) const;
+    // // Method that returns the acceleration unit vector
+    // gp acceleration_versor(const particle &pArticle) const;
 
-    // Method to get the magnitude of the acceleration
-    double acceleration_module(const particle &pArticle);
+    // // Method to get the magnitude of the acceleration
+    // double acceleration_module(const particle &pArticle);
 
-    gp acceleration_vector(const particle &pArticle);
+    // gp acceleration_vector(const particle &pArticle);
 
-    // Method to evolve the particle using the Runge-Kutta method
-    void evolve(const particle& pArticle, double rilevator_radius, std::ofstream& angular_file);
+    // // Method to evolve the particle using the Runge-Kutta method
+    // void evolve(const particle& pArticle, double rilevator_radius, std::ofstream& angular_file);
 };
 
 // Define the arctangent to return values between 0 and 2*pi

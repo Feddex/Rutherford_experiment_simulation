@@ -1,0 +1,1 @@
+/usr/bin/c++  -Wall -Wextra CMakeFiles/rat.dir/rat.cpp.o CMakeFiles/rat.dir/engine.cpp.o CMakeFiles/rat.dir/main.cpp.o -o rat 

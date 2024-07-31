@@ -11,6 +11,7 @@ void print(gp const &p)
 }
 
 gp operator*(double c, const gp &stru) { return {c * stru.a, c * stru.b}; }
+gp operator/(const gp &stru, double c) { return {stru.a / c, stru.b / c}; }
 gp operator+(const gp &lhs, const gp &rhs) { return {lhs.a + rhs.a, lhs.b + rhs.b}; }
 gp &operator+=(gp &lhs, const gp &rhs)
 {
@@ -18,7 +19,7 @@ gp &operator+=(gp &lhs, const gp &rhs)
     lhs.b += rhs.b;
     return lhs;
 }
-
+//pourposely made for this specific configuration
 double atangent(double y, double x)
 {
     double pi = 3.14159265359;
@@ -41,109 +42,82 @@ double atangent(double y, double x)
     return 0;
 }
 
-particle::particle(double mass, double charge, double init_y, gp position, gp velocity)
-    : _mass(mass), _charge(charge), _init_y(init_y), _position(position), _velocity(velocity)
+particle::particle(double charge, gp position): _charge(charge*charge_unit), _position(position) {}
+
+alpha::alpha(double mass, double charge, double init_y, gp position, gp velocity)
+    : _mass(mass), particle::particle(charge, position), _init_y(init_y), _velocity(velocity)
 {
     if (mass < 0)
         throw std::invalid_argument("Mass must be positive");
 }
 
-gp particle::getposition() const { return _position; }
-gp particle::getvelocity() const { return _velocity; }
-gp particle::getacceleration() const { return _acceleration; }
-double particle::getcharge() const { return _charge; }
-double particle::getmass() const { return _mass; }
-double particle::getinity() const { return _init_y; }
 
-void particle::set_xposition(double a) { _position.a = a; }
-void particle::set_yposition(double b) { _position.b = b; }
-void particle::set_xvelocity(double a) { _velocity.a = a; }
-void particle::set_yvelocity(double b) { _velocity.b = b; }
+double particle::get_charge() const { return _charge; }
+gp particle::get_position() const { return _position; }
 
-double particle::O_distance() const
+
+gp alpha::get_velocity() const { return _velocity; }
+gp alpha::get_acceleration() const { return _acceleration; }
+double alpha::getmass() const { return _mass; }
+double alpha::getinity() const { return _init_y; }
+
+void alpha::set_position(const gp a) { _position = a; }
+void alpha::set_velocity(const gp a) { _velocity = a; }
+void alpha::set_acceleration(const gp acceleration) { _acceleration = acceleration; }
+
+double alpha::O_distance() const
 {
     return std::sqrt(std::pow(_position.a, 2) + std::pow(_position.b, 2));
 }
 
-double particle::P_distance(const particle &pArticle) const
-{
-    return std::sqrt(std::pow(_position.a - pArticle.getposition().a, 2) + std::pow(_position.b - pArticle.getposition().b, 2));
-}
 
-gp particle::vector_distance(const particle &pArticle) const
-{
-    return {_position.a - pArticle.getposition().a, _position.b - pArticle.getposition().b};
-}
+// // Yoshida coefficients
+// const double w1 = 1.0 / (2.0 - std::pow(2.0, 1.0 / 3.0));
+// const double w0 =  1.0 - 2.0 * w1;
 
-gp particle::versor_distance(const particle &pArticle) const
-{
-    double p_distance = P_distance(pArticle); // Correct distance between particles
-    gp vector_dist = vector_distance(pArticle);
-    return {vector_dist.a / p_distance, vector_dist.b / p_distance};
-}
+// const double c1 = w1 / 2.0;
+// const double c2 = (w0 + w1) / 2.0;
+// const double c3 = c2;
+// const double c4 = c1;
 
-double particle::acceleration_module(const particle &pArticle)
-{
-    const double k = 8.9875517873681764e9; // Coulomb constant
-    double p_distance = P_distance(pArticle);
+// const double d1 = w1;
+// const double d2 = w0;
+// const double d3 = w1;
 
-    return k * _charge * pArticle.getcharge() / (std::pow(p_distance, 2) * _mass);
-}
-
-gp particle::acceleration_vector(const particle &pArticle)
-{
-    double a_module = acceleration_module(pArticle);
-    gp a_versor = versor_distance(pArticle);
-    return a_module * a_versor;
-}
-
-// Yoshida coefficients
-const double w1 = 1.0 / (2.0 - std::pow(2.0, 1.0 / 3.0));
-const double w0 =  1.0 - 2.0 * w1;
-
-const double c1 = w1 / 2.0;
-const double c2 = (w0 + w1) / 2.0;
-const double c3 = c2;
-const double c4 = c1;
-
-const double d1 = w1;
-const double d2 = w0;
-const double d3 = w1;
-
-void particle::evolve(const particle &pArticle, double rilevator_radius, std::ofstream &angular_file)
-{
-    double t = 0;
-    double dt = 1e-22;
+// void alpha::evolve(const particle &pArticle, double rilevator_radius, std::ofstream &angular_file)
+// {
+//     double t = 0;
+//     double dt = 1e-22;
     
 
-    std::vector<gp> transit;
-    transit.push_back(_position);
+//     std::vector<gp> transit;
+//     transit.push_back(_position);
 
-    // //FOR LP
-    // // Initial half-step for velocity
-    // gp initial_acc = acceleration_vector(pArticle);
-    // _velocity += 0.5 * dt * initial_acc;
+//     // //FOR LP
+//     // // Initial half-step for velocity
+//     // gp initial_acc = acceleration_vector(pArticle);
+//     // _velocity += 0.5 * dt * initial_acc;
 
-    while (O_distance() < rilevator_radius)
-    {
-        // //YOSHIDA
-        // Yoshida Step 1
-        _position += c1 * dt * _velocity;
-        _velocity += d1 * dt * acceleration_vector(pArticle);
+//     while (O_distance() < rilevator_radius)
+//     {
+//         // //YOSHIDA
+//         // Yoshida Step 1
+//         _position += c1 * dt * _velocity;
+//         _velocity += d1 * dt * acceleration_vector(pArticle);
        
-        // Yoshida Step 2
-        _position += c2 * dt * _velocity;
-        _velocity += d2 * dt * acceleration_vector(pArticle);
+//         // Yoshida Step 2
+//         _position += c2 * dt * _velocity;
+//         _velocity += d2 * dt * acceleration_vector(pArticle);
         
-        // Yoshida Step 3
-        _position += c3 * dt * _velocity;
-         _velocity += d3 * dt * acceleration_vector(pArticle);
+//         // Yoshida Step 3
+//         _position += c3 * dt * _velocity;
+//          _velocity += d3 * dt * acceleration_vector(pArticle);
 
-        // Yoshida Step 4
-        _position += c4 * dt * _velocity;
+//         // Yoshida Step 4
+//         _position += c4 * dt * _velocity;
 
-        // // Record the position for analysis
-        // transit.push_back(_position);
+//         // // Record the position for analysis
+//         // transit.push_back(_position);
 
         
         //RK
@@ -175,35 +149,35 @@ void particle::evolve(const particle &pArticle, double rilevator_radius, std::of
 
                 
 
-        // Record the position for analysis
-        transit.push_back(_position);
+    //     // Record the position for analysis
+    //     transit.push_back(_position);
         
-        // std::cout << "Position: ";
-        //     print(_position);
-            // std::cout << "Velocity: ";
-            // print(_velocity);
-            // std::cout << "acc: ";
-            // print(acceleration_vector(pArticle));
-    }
+    //     // std::cout << "Position: ";
+    //     //     print(_position);
+    //         // std::cout << "Velocity: ";
+    //         // print(_velocity);
+    //         // std::cout << "acc: ";
+    //         // print(acceleration_vector(pArticle));
+    // }
 
 
 
 
 ///ANGOLO NON TOCCARE 
-    // Determine the angle of the last position relative to the rilevator_radius
-    auto it = (transit.end() - 1);
-    auto is = it - 1;
-    double diff_lastpos_radius = std::abs(O_distance() - rilevator_radius);
-    double diff_penlastpos_radius = std::abs(std::sqrt(std::pow((*is).a, 2) + std::pow((*is).b, 2)) - rilevator_radius);
+//     // Determine the angle of the last position relative to the rilevator_radius
+//     auto it = (transit.end() - 1);
+//     auto is = it - 1;
+//     double diff_lastpos_radius = std::abs(O_distance() - rilevator_radius);
+//     double diff_penlastpos_radius = std::abs(std::sqrt(std::pow((*is).a, 2) + std::pow((*is).b, 2)) - rilevator_radius);
 
-    if (diff_lastpos_radius < diff_penlastpos_radius)
-    {
-        double angular = atangent((*it).b-getinity(), (*it).a);
-        angular_file << angular << '\n';
-    }
-    else
-    {
-        double angular = atangent((*is).b-getinity(), (*is).a);
-        angular_file << angular << '\n';
-    }
-}
+//     if (diff_lastpos_radius < diff_penlastpos_radius)
+//     {
+//         double angular = atangent((*it).b-getinity(), (*it).a);
+//         angular_file << angular << '\n';
+//     }
+//     else
+//     {
+//         double angular = atangent((*is).b-getinity(), (*is).a);
+//         angular_file << angular << '\n';
+//     }
+// }

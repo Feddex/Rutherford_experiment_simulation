@@ -1,0 +1,45 @@
+
+    void setStyle(){
+  gROOT->SetStyle("Plain");
+  gStyle->SetPalette(57);
+  gStyle->SetOptTitle(0);
+}
+    void Ang() {
+// funzione principale della macro
+TCanvas *A = new TCanvas("A","deflaction angular currencies' distribution");
+//creazione istogramma
+   TH1F *h1 = new TH1F("h1","angulars",1000,0-0.1, 2*3.141509265359+0.1); //2*3.141509265359+0.4
+
+//lettura da file ascii e riempimento istogramma
+   ifstream in;
+   in.open("angulars.txt");
+   Float_t y;
+   while (1) {
+     in >> y;
+     if(!in.good()) break;
+     h1->Fill(y);
+   }
+   in.close();
+
+  
+//Canvas, la finestra grafica.... 
+//  TCanvas *A = new TCanvas("A","deflaction angular currencies' distribution");
+//cosmetica istogrammi: titolo assi, colore, spessore linea,tipo di Marker...  
+ h1->GetXaxis()->SetTitle("angle of deflection");
+ h1->GetYaxis()->SetTitleOffset(1.);
+ h1->GetYaxis()->SetTitle("Currencies");
+ h1->SetFillColor(kBlue); //(KBlue=2)
+ //h1->SetMarkerStyle(4); //Open Circle // altrimenti kOpenCircle
+ h1->SetLineWidth(0.01); //spessore linea
+ ////////////gStyle->SetOptStat(112210); //no nome, entries, media e rms con errori, under (over)flow 
+ 
+//Drawing
+ //////////////h1->SetMaximum(35);
+ h1->Draw();
+ //h1->Draw("E,same");
+
+//for( int i = {0}; i < 502; ++i )
+//std::cout<< "Bin number "<< i << " has "<< h1->GetBinContent(i)<< " entries " << '\n';
+
+}
+
